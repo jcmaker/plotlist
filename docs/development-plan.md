@@ -36,20 +36,23 @@ Do not start a task before the previous one is working end-to-end.
 
 ---
 
-## Task 3 — Playlists CRUD
+## Task 3 — Playlists CRUD (DONE)
 
 **Goal:** Users can create, view, edit, and delete playlists.
 
-- [ ] Run SQL: create `playlists` table + RLS policies + `handle_updated_at` trigger
-- [ ] Implement create playlist: title, description, visibility picker, slug auto-generation
-- [ ] Fetch and display user's playlists on PlaylistsScreen
-- [ ] Implement PlaylistDetailScreen: show metadata and empty movie list
-- [ ] Implement edit playlist: update title, description, visibility
-- [ ] Implement delete playlist with confirmation dialog
-- [ ] Implement playlist reordering (drag or up/down buttons)
-- [ ] Implement playlist cover image: pick from device or use first movie poster
+- [x] Run SQL: `docs/supabase-setup.sql` — adds `playlists` table, RLS, `handle_updated_at` trigger
+- [x] `playlistService.ts` — CRUD functions, slug utilities, `rowToPlaylist` mapping
+- [x] `usePlaylists` hook — fetch all playlists for current user
+- [x] `usePlaylist` hook — fetch single playlist scoped to owner
+- [x] `PlaylistsScreen` — real list with FlatList, empty state, refetch-on-focus
+- [x] `new.tsx` — create playlist: title, description, slug (auto + editable), visibility
+- [x] `[id]/index.tsx` — playlist detail: real data, edit button, delete with confirmation
+- [x] `[id]/edit.tsx` — edit playlist: pre-filled form, slug conflict resolution
+- [x] Slug auto-generation from title with uniqueness resolution (append -2, -3…)
+- [ ] Playlist reordering — deferred to polish task
+- [ ] Cover image — deferred to Task 4 (will use first movie poster)
 
-**Done when:** Users can create, read, edit, delete, and reorder playlists.
+**Done when:** Users can create, read, edit, and delete playlists end-to-end.
 
 ---
 

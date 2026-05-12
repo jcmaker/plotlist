@@ -81,3 +81,42 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- ============================================================
+-- TABLE: playlists
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.playlists (
+  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title           text        NOT NULL,
+  description     text,
+  cover_image_url text,
+  visibility      text        NOT NULL DEFAULT 'private'
+                              CHECK (visibility IN ('private', 'unlisted', 'public')),
+  slug            text        NOT NULL,
+  sort_order      integer     NOT NULL DEFAULT 0,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_id, slug)
+);
+
+ALTER TABLE public.playlists ENABLE ROW LEVEL SECURITY;
+
+-- Owners can read, insert, update, and delete their own playlists
+CREATE POLICY "playlists_owner_all"
+  ON public.playlists
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- Public and unlisted playlists are readable by anyone.
+-- Added now (Task 3) because Task 5 (share page) requires it and adding it
+-- later would require a table-level policy change under active traffic.
+CREATE POLICY "playlists_select_public_unlisted"
+  ON public.playlists FOR SELECT
+  USING (visibility IN ('public', 'unlisted'));
+
+-- updated_at trigger for playlists
+DROP TRIGGER IF EXISTS handle_playlists_updated_at ON public.playlists;
+CREATE TRIGGER handle_playlists_updated_at
+  BEFORE UPDATE ON public.playlists
+  FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
