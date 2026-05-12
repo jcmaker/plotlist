@@ -1,0 +1,23 @@
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Environment variables — never commit real keys
+.env
+.env.local
+.env.development
+.env.production
+
+# Native build artifacts
+ios/
+android/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
