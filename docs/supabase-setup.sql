@@ -120,3 +120,114 @@ DROP TRIGGER IF EXISTS handle_playlists_updated_at ON public.playlists;
 CREATE TRIGGER handle_playlists_updated_at
   BEFORE UPDATE ON public.playlists
   FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+
+-- ============================================================
+-- TABLE: movie_cache  (Task 4)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.movie_cache (
+  tmdb_movie_id  integer     PRIMARY KEY,
+  title          text        NOT NULL,
+  original_title text,
+  overview       text,
+  poster_path    text,
+  backdrop_path  text,
+  release_date   date,
+  release_year   integer,
+  cached_at      timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.movie_cache ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read the cache (needed for Task 5 share page without auth)
+CREATE POLICY "movie_cache_select_all"
+  ON public.movie_cache FOR SELECT
+  USING (true);
+
+-- Authenticated users can insert new cache entries
+CREATE POLICY "movie_cache_insert_authenticated"
+  ON public.movie_cache FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+-- Authenticated users can update (for cache refresh via upsert)
+CREATE POLICY "movie_cache_update_authenticated"
+  ON public.movie_cache FOR UPDATE
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+-- ============================================================
+-- TABLE: playlist_movies  (Task 4)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.playlist_movies (
+  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  playlist_id     uuid        NOT NULL REFERENCES public.playlists(id) ON DELETE CASCADE,
+  tmdb_movie_id   integer     NOT NULL REFERENCES public.movie_cache(tmdb_movie_id),
+  user_id         uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  personal_rating integer     CHECK (personal_rating BETWEEN 1 AND 10),
+  note            text,
+  sort_order      integer     NOT NULL DEFAULT 0,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (playlist_id, tmdb_movie_id)
+);
+
+ALTER TABLE public.playlist_movies ENABLE ROW LEVEL SECURITY;
+
+-- Owner can select movies in their playlists
+CREATE POLICY "playlist_movies_owner_select"
+  ON public.playlist_movies FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.playlists
+      WHERE playlists.id = playlist_movies.playlist_id
+        AND playlists.user_id = auth.uid()
+    )
+  );
+
+-- Owner can insert, and must set user_id = their own uid
+CREATE POLICY "playlist_movies_owner_insert"
+  ON public.playlist_movies FOR INSERT
+  WITH CHECK (
+    auth.uid() = user_id
+    AND EXISTS (
+      SELECT 1 FROM public.playlists
+      WHERE playlists.id = playlist_movies.playlist_id
+        AND playlists.user_id = auth.uid()
+    )
+  );
+
+-- Owner can update (ratings/notes) on their playlists
+CREATE POLICY "playlist_movies_owner_update"
+  ON public.playlist_movies FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.playlists
+      WHERE playlists.id = playlist_movies.playlist_id
+        AND playlists.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.playlists
+      WHERE playlists.id = playlist_movies.playlist_id
+        AND playlists.user_id = auth.uid()
+    )
+  );
+
+-- Owner can delete movies from their playlists
+CREATE POLICY "playlist_movies_owner_delete"
+  ON public.playlist_movies FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.playlists
+      WHERE playlists.id = playlist_movies.playlist_id
+        AND playlists.user_id = auth.uid()
+    )
+  );
+
+-- updated_at trigger for playlist_movies
+DROP TRIGGER IF EXISTS handle_playlist_movies_updated_at ON public.playlist_movies;
+CREATE TRIGGER handle_playlist_movies_updated_at
+  BEFORE UPDATE ON public.playlist_movies
+  FOR EACH ROW EXECUTE FUNCTION handle_updated_at();

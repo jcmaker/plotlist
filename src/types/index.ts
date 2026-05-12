@@ -29,23 +29,28 @@ export interface PlaylistMovie {
   id: string;
   playlistId: string;
   tmdbMovieId: number;
+  userId: string;
+  // Joined from movie_cache:
   title: string;
-  posterUrl: string | null;
+  posterPath: string | null;
   releaseYear: number | null;
+  overview: string | null;
+  // User annotations:
   personalRating: number | null; // 1–10, null means unrated
   note: string | null;
   sortOrder: number;
-  addedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MovieCache {
   tmdbMovieId: number;
   title: string;
   originalTitle: string | null;
-  posterUrl: string | null;
-  backdropUrl: string | null;
-  releaseYear: number | null;
   overview: string | null;
-  genres: string[] | null;
+  posterPath: string | null;
+  backdropPath: string | null;
+  releaseDate: string | null;
+  releaseYear: number | null;
   cachedAt: string;
 }

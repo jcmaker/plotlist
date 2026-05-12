@@ -56,22 +56,22 @@ Do not start a task before the previous one is working end-to-end.
 
 ---
 
-## Task 4 — Movie Search & Add to Playlist
+## Task 4 — Movie Search & Add to Playlist (DONE)
 
 **Goal:** Users can search TMDB and add movies to a playlist.
 
-- [ ] Set up TMDB API key env var
-- [ ] Implement TMDB movie search (`/search/movie`) with debounce
-- [ ] Display search results: poster, title, year, overview excerpt
-- [ ] Implement "Add to Playlist" flow from search results
-- [ ] Run SQL: create `playlist_movies` table + RLS + `movie_cache` table
-- [ ] Populate `movie_cache` on first search/add
-- [ ] Display movies in PlaylistDetailScreen: poster, title, year, rating, note
-- [ ] Implement remove movie from playlist
-- [ ] Implement reorder movies within playlist
-- [ ] Implement personal rating (1–10) and short note per movie
+- [x] `EXPO_PUBLIC_TMDB_API_KEY` env var in `.env.example`
+- [x] `src/lib/tmdb.ts` — TMDB search (`/search/movie`) with 300ms debounce, `getPosterUrl` helper
+- [x] `app/playlist/[id]/add-movie.tsx` — Search screen: poster, title, year, overview, "+ Add" button
+- [x] Run SQL: `movie_cache` table + RLS, `playlist_movies` table + RLS (in `docs/supabase-setup.sql`)
+- [x] `src/lib/playlistMovieService.ts` — `addMovieToPlaylist` (upsert cache + insert), `getPlaylistMovies`, `removeMovieFromPlaylist`, `updatePlaylistMovieMeta`
+- [x] `src/hooks/usePlaylistMovies.ts` — fetch movies, refetch-on-focus pattern
+- [x] `app/playlist/[id]/index.tsx` — displays movies with poster/title/year/rating/note, "+ Add Movie" button, remove with confirmation, rating+note edit modal
+- [x] First movie poster used as playlist cover image
+- [x] Duplicate add returns friendly error ("already in playlist")
+- [ ] Playlist movie reorder — deferred to Task 6
 
-**Done when:** Users can search, add, annotate, reorder, and remove movies in a playlist.
+**Done when:** Users can search, add, annotate, and remove movies in a playlist.
 
 ---
 

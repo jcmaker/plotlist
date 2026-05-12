@@ -55,18 +55,17 @@ Extends Supabase's built-in `auth.users`. Created automatically via trigger on u
 |---|---|---|
 | `id` | `uuid` PK | Default `gen_random_uuid()` |
 | `playlist_id` | `uuid` NOT NULL | References `playlists(id)` ON DELETE CASCADE |
-| `tmdb_movie_id` | `int4` NOT NULL | TMDB movie identifier |
-| `title` | `text` NOT NULL | Denormalized for fast display without join |
-| `poster_url` | `text` | Nullable, constructed from TMDB base URL |
-| `release_year` | `int4` | Nullable |
-| `personal_rating` | `int2` | Nullable, 1–10 check constraint |
+| `tmdb_movie_id` | `int4` NOT NULL | References `movie_cache(tmdb_movie_id)` |
+| `user_id` | `uuid` NOT NULL | References `auth.users(id)` ON DELETE CASCADE |
+| `personal_rating` | `int4` | Nullable, 1–10 check constraint |
 | `note` | `text` | Nullable, short personal note |
 | `sort_order` | `int4` NOT NULL | Default `0`, user-defined order within playlist |
-| `added_at` | `timestamptz` | Default `now()` |
+| `created_at` | `timestamptz` | Default `now()` |
+| `updated_at` | `timestamptz` | Updated via trigger |
 
 **Unique constraint:** `(playlist_id, tmdb_movie_id)` — one movie per playlist
 
-**RLS:** Inherits from parent playlist visibility. Check `playlists.user_id = auth.uid()` for writes.
+**RLS:** All operations check `playlists.user_id = auth.uid()` via EXISTS subquery. Title, poster, and year are fetched via FK join with `movie_cache`, not stored redundantly.
 
 ---
 
@@ -79,18 +78,18 @@ Cached TMDB API responses to reduce external API calls and stay within rate limi
 | `tmdb_movie_id` | `int4` PK | |
 | `title` | `text` NOT NULL | |
 | `original_title` | `text` | Nullable |
-| `poster_url` | `text` | Nullable, full constructed URL |
-| `backdrop_url` | `text` | Nullable |
-| `release_year` | `int4` | Nullable |
 | `overview` | `text` | Nullable |
-| `genres` | `text[]` | Nullable, array of genre names |
+| `poster_path` | `text` | Nullable, raw TMDB path (e.g. `/xyz.jpg`) |
+| `backdrop_path` | `text` | Nullable, raw TMDB path |
+| `release_date` | `date` | Nullable |
+| `release_year` | `int4` | Nullable, derived from `release_date` |
 | `cached_at` | `timestamptz` | Default `now()` |
 
 **RLS:**
-- SELECT: public
-- INSERT/UPDATE: authenticated users (cache population happens client-side on search)
+- SELECT: public (needed for share page without auth)
+- INSERT/UPDATE: authenticated users (upsert on first add)
 
-**Cache invalidation:** Stale if `cached_at < now() - interval '30 days'`. Client checks this and re-fetches if stale.
+**Poster URL construction:** `https://image.tmdb.org/t/p/w500{poster_path}` — done at display time in `src/lib/tmdb.ts:getPosterUrl`.
 
 ---
 
@@ -136,6 +135,6 @@ CREATE TRIGGER on_auth_user_created
 ## Notes
 
 - All IDs are UUIDs. Never use sequential integers as public-facing IDs.
-- `poster_url` in `playlist_movies` stores the full TMDB image URL (constructed as `https://image.tmdb.org/t/p/w500{poster_path}`), not just the path. This avoids coupling the client display logic to TMDB's URL format.
+- `poster_path` in `movie_cache` stores the raw TMDB path (e.g. `/abc123.jpg`). The full URL is constructed at display time via `getPosterUrl()` in `src/lib/tmdb.ts`. This keeps the cache portable if TMDB changes their CDN URL structure.
 - The `slug` field on playlists enables human-readable share URLs like `/u/filmjunkie/my-favorite-thrillers` without exposing internal UUIDs.
 - `movie_cache` is intentionally denormalized — it trades some storage for simpler queries and resilience against TMDB rate limits.
