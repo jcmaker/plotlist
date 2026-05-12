@@ -22,14 +22,20 @@ export async function searchMovies(
   if (!apiKey) return { results: [], error: 'TMDB API key not configured.' };
   if (!query.trim()) return { results: [], error: null };
 
-  try {
-    const url =
-      `${TMDB_BASE}/search/movie` +
-      `?api_key=${encodeURIComponent(apiKey)}` +
-      `&query=${encodeURIComponent(query.trim())}` +
-      `&include_adult=false&language=en-US&page=1`;
+  // TMDB issues two credential types:
+  //   - API Key (v3): short hex string  → ?api_key=KEY
+  //   - Read Access Token (JWT): starts with "eyJ" → Authorization: Bearer TOKEN
+  const isBearer = apiKey.startsWith('eyJ');
+  const url =
+    `${TMDB_BASE}/search/movie` +
+    (isBearer ? '' : `?api_key=${encodeURIComponent(apiKey)}`) +
+    `${isBearer ? '?' : '&'}query=${encodeURIComponent(query.trim())}` +
+    `&include_adult=false&language=en-US&page=1`;
+  const headers: Record<string, string> = { accept: 'application/json' };
+  if (isBearer) headers['Authorization'] = `Bearer ${apiKey}`;
 
-    const res = await fetch(url, { headers: { accept: 'application/json' } });
+  try {
+    const res = await fetch(url, { headers });
     if (!res.ok) {
       return { results: [], error: `TMDB error: ${res.status}` };
     }
