@@ -13,8 +13,9 @@ function AuthGuard() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inShareGroup = segments[0] === 'share'; // public — no login required
 
-    if (!user && !inAuthGroup) {
+    if (!user && !inAuthGroup && !inShareGroup) {
       router.replace('/(auth)/login');
     } else if (user && inAuthGroup) {
       router.replace('/(tabs)');

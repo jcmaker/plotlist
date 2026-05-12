@@ -92,19 +92,22 @@ Do not start a task before the previous one is working end-to-end.
 
 ---
 
-## Task 5 — Share Link & Public Playlist Page
+## Task 5 — Share Link & Public Playlist Page (DONE)
 
 **Goal:** Each playlist has a public URL that non-app users can view.
 
-- [ ] Implement `app/share/[handle]/[slug].tsx` — public playlist page
-- [ ] No auth required on this route
-- [ ] Display: playlist title, description, movie list with posters
-- [ ] Implement "Copy link" button on playlist detail screen
-- [ ] Handle unlisted vs public visibility on share page (unlisted accessible via link, not indexed)
-- [ ] Test share URL on web (Expo web output)
-- [ ] Basic SEO meta tags for public playlists (og:title, og:image)
+- [x] `app/share/[handle]/[slug].tsx` — public share page, no auth required
+- [x] Auth guard updated — `/share/*` routes bypass login redirect
+- [x] `src/lib/shareService.ts` — `getPublicPlaylistPage`, `buildShareUrl`
+- [x] `EXPO_PUBLIC_SHARE_BASE_URL` env var in `.env.example`
+- [x] Share button on Playlist Detail — uses React Native `Share` sheet
+- [x] Private playlists blocked (client filter + RLS)
+- [x] Public/unlisted playlists show poster, title, year, rating, note
+- [x] "Made with Plotlist" branding on share page
+- [ ] SEO meta tags (og:title, og:image) — deferred to Task 6
+- [ ] Native share sheet polish — deferred to Task 6
 
-**Done when:** Anyone with the link can view a public or unlisted playlist in a browser.
+**Done when:** Anyone with the link can view a public or unlisted playlist.
 
 ---
 

@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -18,12 +19,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../src/hooks/useAuth';
 import { usePlaylist } from '../../../src/hooks/usePlaylist';
 import { usePlaylistMovies } from '../../../src/hooks/usePlaylistMovies';
+import { useProfile } from '../../../src/hooks/useProfile';
 import { deletePlaylist } from '../../../src/lib/playlistService';
 import {
   removeMovieFromPlaylist,
   updatePlaylistMovieMeta,
 } from '../../../src/lib/playlistMovieService';
 import { getPosterUrl } from '../../../src/lib/tmdb';
+import { buildShareUrl } from '../../../src/lib/shareService';
 import { PlaylistMovie, PlaylistVisibility } from '../../../src/types';
 
 const VISIBILITY_LABEL: Record<PlaylistVisibility, string> = {
@@ -39,6 +42,7 @@ export default function PlaylistDetailScreen() {
     usePlaylist(id, user?.id);
   const { movies, isLoading: moviesLoading, refetch: refetchMovies } =
     usePlaylistMovies(id);
+  const { profile } = useProfile(user?.id);
   const router = useRouter();
 
   const [editingMovie, setEditingMovie] = useState<PlaylistMovie | null>(null);
@@ -103,6 +107,16 @@ export default function PlaylistDetailScreen() {
     );
   }
 
+  async function handleShare() {
+    if (!playlist || !profile) return;
+    const url = buildShareUrl(profile.handle, playlist.slug);
+    try {
+      await Share.share({ message: url });
+    } catch {
+      // user dismissed — no action needed
+    }
+  }
+
   async function handleDelete() {
     if (!id) return;
     Alert.alert(
@@ -153,6 +167,22 @@ export default function PlaylistDetailScreen() {
           <Text style={styles.description}>{playlist.description}</Text>
         ) : null}
         <Text style={styles.slugText}>/{playlist?.slug ?? ''}</Text>
+
+        {/* Share */}
+        {playlist?.visibility === 'private' ? (
+          <Text style={styles.privateShareHint}>
+            Set to Unlisted or Public to share this playlist
+          </Text>
+        ) : (
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={handleShare}
+            activeOpacity={0.7}
+            disabled={!profile}
+          >
+            <Text style={styles.shareButtonText}>Share Link</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Movies section header */}
@@ -627,5 +657,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#000000',
     fontWeight: '700',
+  },
+  shareButton: {
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#1c1c1e',
+    borderWidth: 1,
+    borderColor: '#3a3a3c',
+  },
+  shareButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  privateShareHint: {
+    marginTop: 10,
+    fontSize: 13,
+    color: '#555',
+    fontStyle: 'italic',
   },
 });

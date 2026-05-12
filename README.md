@@ -16,7 +16,7 @@ A mobile app for movie lovers. Create movie playlists, add movies you've watched
 
 | Layer | Technology |
 |---|---|
-| Mobile framework | [Expo](https://expo.dev) SDK 52 |
+| Mobile framework | [Expo](https://expo.dev) SDK 54 |
 | Language | TypeScript (strict) |
 | Navigation | [Expo Router](https://expo.github.io/router) v4 (file-based) |
 | UI | React Native `StyleSheet` (no external styling library) |
@@ -30,30 +30,44 @@ A mobile app for movie lovers. Create movie playlists, add movies you've watched
 
 ```
 plotlist/
-├── app/                     # Expo Router file-based routes
-│   ├── (auth)/              # Unauthenticated screens (login, sign up)
-│   │   └── login.tsx
-│   ├── (tabs)/              # Main tab navigation
-│   │   ├── index.tsx        # Home
-│   │   ├── playlists.tsx    # My Lists
-│   │   ├── search.tsx       # Movie Search
-│   │   └── profile.tsx      # Profile
+├── app/                         # Expo Router file-based routes
+│   ├── (auth)/                  # Unauthenticated screens
+│   │   ├── login.tsx
+│   │   └── signup.tsx
+│   ├── (tabs)/                  # Main tab navigation
+│   │   ├── playlists.tsx        # My Lists (default tab)
+│   │   └── profile.tsx          # Profile + sign out
 │   ├── playlist/
-│   │   └── [id].tsx         # Playlist detail (dynamic route)
-│   └── _layout.tsx          # Root layout — auth guard lives here
+│   │   ├── new.tsx              # Create playlist
+│   │   └── [id]/
+│   │       ├── index.tsx        # Playlist detail + movie list + share
+│   │       ├── edit.tsx         # Edit playlist metadata
+│   │       └── add-movie.tsx    # TMDB movie search + add to playlist
+│   ├── share/
+│   │   └── [handle]/
+│   │       └── [slug].tsx       # Public share page (no auth required)
+│   └── _layout.tsx              # Root layout — auth guard
 ├── src/
-│   ├── components/          # Shared UI components (empty in foundation)
 │   ├── hooks/
-│   │   └── useAuth.ts       # Supabase auth state hook
+│   │   ├── useAuth.ts
+│   │   ├── useProfile.ts
+│   │   ├── usePlaylists.ts
+│   │   ├── usePlaylist.ts
+│   │   └── usePlaylistMovies.ts
 │   ├── lib/
-│   │   └── supabase.ts      # Supabase client singleton
+│   │   ├── supabase.ts
+│   │   ├── tmdb.ts              # TMDB search + poster URL helpers
+│   │   ├── playlistService.ts
+│   │   ├── playlistMovieService.ts
+│   │   └── shareService.ts      # Public share page data + URL builder
 │   └── types/
-│       └── index.ts         # TypeScript interfaces for all domain models
+│       └── index.ts
 ├── docs/
-│   ├── database-schema.md   # Postgres table design + RLS policies
-│   ├── development-plan.md  # Ordered task list for the full MVP
-│   └── devil-pm-review.md  # Scope and risk review per task
-├── .env.example             # Required environment variables
+│   ├── database-schema.md
+│   ├── development-plan.md
+│   ├── supabase-setup.sql       # All table DDL + RLS policies
+│   └── devil-pm-review-task5.md
+├── .env.example
 └── README.md
 ```
 
@@ -87,17 +101,18 @@ Scan the QR code with Expo Go (iOS/Android) or press `i` for iOS Simulator / `a`
 
 ---
 
-## Current State (Tasks 1–4 complete)
+## Current State (Tasks 1–5 complete)
 
-Tasks 1–4 are fully implemented. See `docs/development-plan.md` for the full roadmap.
+Tasks 1–5 are fully implemented. See `docs/development-plan.md` for the full roadmap.
 
 - **Login / Signup** — email/password auth via Supabase
 - **Lists tab** — create, view, edit, delete playlists with visibility (private/unlisted/public)
 - **Playlist Detail** — add movies from TMDB search, remove movies, rate (1–10), add personal notes
 - **Movie Search** — contextual from Playlist Detail → "+ Add Movie"; 300ms debounce, poster display
 - **Profile tab** — display name, handle, bio; sign out
+- **Share pages** — every public or unlisted playlist has a public URL (`/share/:handle/:slug`); accessible without login; private playlists are blocked at both the client and RLS layer
 
-**Next task:** Task 5 — Public Share Pages
+**Next task:** Task 6 — Polish & Image Sharing Foundation
 
 ---
 
@@ -105,14 +120,15 @@ Tasks 1–4 are fully implemented. See `docs/development-plan.md` for the full r
 
 ```
 app/
-├── (auth)/login.tsx           — email/password sign-in
-├── (auth)/signup.tsx          — new account creation
-├── (tabs)/playlists.tsx       — user's playlist list (main tab)
-├── (tabs)/profile.tsx         — profile + sign out
-├── playlist/new.tsx           — create playlist
-├── playlist/[id]/index.tsx    — playlist detail + movie list
-├── playlist/[id]/edit.tsx     — edit playlist metadata
-└── playlist/[id]/add-movie.tsx — TMDB search, add to playlist
+├── (auth)/login.tsx               — email/password sign-in
+├── (auth)/signup.tsx              — new account creation
+├── (tabs)/playlists.tsx           — user's playlist list (main tab)
+├── (tabs)/profile.tsx             — profile + sign out
+├── playlist/new.tsx               — create playlist
+├── playlist/[id]/index.tsx        — playlist detail + movie list + share button
+├── playlist/[id]/edit.tsx         — edit playlist metadata
+├── playlist/[id]/add-movie.tsx    — TMDB search, add to playlist
+└── share/[handle]/[slug].tsx      — public playlist page (no auth required)
 ```
 
 ---
@@ -131,7 +147,7 @@ Each task in `docs/development-plan.md` is designed to be completable end-to-end
 
 **Why Supabase?** Handles auth, Postgres, real-time, and file storage in one managed service. Eliminates the need for a custom backend for the MVP.
 
-**Why AsyncStorage for Supabase sessions?** Simpler to set up for the foundation. Task 2 will replace this with `expo-secure-store` before shipping auth.
+**Why AsyncStorage for Supabase sessions?** Simpler to set up for the foundation. Can be replaced with `expo-secure-store` before shipping to production.
 
 **Why TMDB?** Industry standard for movie metadata, free tier is generous, and the read-only API key is safe to ship in a mobile app.
 
@@ -142,5 +158,6 @@ Each task in `docs/development-plan.md` is designed to be completable end-to-end
 - Never commit `.env` — it is in `.gitignore`
 - `EXPO_PUBLIC_*` variables are embedded in the client bundle — do not put server secrets here
 - The TMDB API key is read-only and rate-limited; exposure in the mobile bundle is acceptable
-- Auth tokens will be moved to `expo-secure-store` in Task 2
-- Row-Level Security (RLS) policies are defined in `docs/database-schema.md` and must be applied when creating Supabase tables
+- Row-Level Security (RLS) is enforced for all tables; see `docs/database-schema.md` and `docs/supabase-setup.sql`
+- Share pages (`/share/*`) are intentionally public — the auth guard bypasses login for that route group only
+- Private playlists are blocked from share URLs at both the application layer and in Postgres RLS — the `playlist_movies_select` policy checks `visibility IN ('public', 'unlisted')` before exposing any rows to unauthenticated callers

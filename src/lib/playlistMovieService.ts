@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import { PlaylistMovie } from '../types';
 import { TmdbMovie } from './tmdb';
 
-interface PlaylistMovieRow {
+export interface PlaylistMovieRow {
   id: string;
   playlist_id: string;
   tmdb_movie_id: number;
