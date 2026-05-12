@@ -111,6 +111,23 @@ Do not start a task before the previous one is working end-to-end.
 
 ---
 
+## Task 5.5 — External Share Readiness Cleanup (DONE)
+
+**Goal:** Make Task 5 safe for external testing. No new features.
+
+- [x] Add `isLocalShareUrl` helper to `shareService.ts`
+- [x] `handleShare` warns user when URL is localhost ("This link is local-only…") before opening share sheet
+- [x] Delete `src/lib/oauthHelpers.ts` — unused OAuth dead code
+- [x] Remove `expo-web-browser` from `package.json` dependencies
+- [x] Remove `expo-web-browser` from `app.json` plugins
+- [x] Update `.env.example` — clear comments explaining local / LAN / external URL scenarios
+- [x] Update README — local share testing vs external share testing instructions
+- [x] Add Task 5 review summary to `docs/devil-pm-review.md`
+
+**Done when:** A developer can hand the share link to a real external user and the app makes it obvious whether the link is locally accessible only.
+
+---
+
 ## Task 6 — Polish & Image Sharing Foundation
 
 **Goal:** App is presentable and ready for beta testing. Share image architecture is in place.

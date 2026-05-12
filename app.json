@@ -30,8 +30,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-asset",
-      "expo-web-browser"
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

@@ -101,6 +101,25 @@ Scan the QR code with Expo Go (iOS/Android) or press `i` for iOS Simulator / `a`
 
 ---
 
+## Share Link Testing
+
+Share links are built from `EXPO_PUBLIC_SHARE_BASE_URL`. There are three scenarios:
+
+| Scenario | URL format | Who can open it |
+|---|---|---|
+| Local dev (default) | `http://localhost:8081/share/…` | Your device only |
+| LAN | `http://192.168.x.x:8081/share/…` | Same Wi-Fi network |
+| External | `https://your-domain.com/share/…` | Anyone on the internet |
+
+When you tap **Share Link** and the URL is a localhost or LAN address, the app shows a warning before opening the share sheet so you don't accidentally send a broken link.
+
+**To enable real external sharing:**
+1. Deploy the Expo web output, or start a tunnel: `npx expo start --tunnel`
+2. Set `EXPO_PUBLIC_SHARE_BASE_URL` in your `.env` to the public HTTPS URL
+3. Restart the dev server to pick up the new env var
+
+---
+
 ## Current State (Tasks 1–5 complete)
 
 Tasks 1–5 are fully implemented. See `docs/development-plan.md` for the full roadmap.

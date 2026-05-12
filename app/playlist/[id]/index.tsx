@@ -26,7 +26,7 @@ import {
   updatePlaylistMovieMeta,
 } from '../../../src/lib/playlistMovieService';
 import { getPosterUrl } from '../../../src/lib/tmdb';
-import { buildShareUrl } from '../../../src/lib/shareService';
+import { buildShareUrl, isLocalShareUrl } from '../../../src/lib/shareService';
 import { PlaylistMovie, PlaylistVisibility } from '../../../src/types';
 
 const VISIBILITY_LABEL: Record<PlaylistVisibility, string> = {
@@ -110,6 +110,28 @@ export default function PlaylistDetailScreen() {
   async function handleShare() {
     if (!playlist || !profile) return;
     const url = buildShareUrl(profile.handle, playlist.slug);
+
+    if (isLocalShareUrl(url)) {
+      Alert.alert(
+        'Local-only link',
+        'This link only works on your device.\n\nSet EXPO_PUBLIC_SHARE_BASE_URL in your .env to a deployed URL before sharing externally.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Copy anyway',
+            onPress: async () => {
+              try {
+                await Share.share({ message: url });
+              } catch {
+                // dismissed
+              }
+            },
+          },
+        ]
+      );
+      return;
+    }
+
     try {
       await Share.share({ message: url });
     } catch {

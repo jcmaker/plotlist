@@ -84,3 +84,39 @@ Rationale:
 **Decision needed before Task 2 starts:**
 1. Email/password only, or include Apple Sign In from the start? (Apple is required for iOS App Store apps that offer social login — if you plan to add Google later, add Apple now or you'll be forced to add it anyway.)
 2. Handle uniqueness — enforce at the DB level (unique constraint) or at the app level? DB level is safer and should be the default.
+
+---
+
+# devil-pm Review — Task 5 & 5.5: Share Pages
+
+**Date:** 2026-05-12
+**Verdict:** Mostly Ready. Needed fixes applied in Task 5.5.
+
+---
+
+## What was built (Task 5)
+
+- `/share/[handle]/[slug]` public route — no auth required
+- `shareService.ts` — fetches public playlist + creator + movies
+- Share button on Playlist Detail — native share sheet
+- Auth guard updated to pass `/share/*` without login redirect
+- RLS: `playlist_movies_select` allows unauthenticated reads for `public`/`unlisted` playlists
+
+## What was fixed (Task 5.5)
+
+**Localhost share URL was misleading.**
+`buildShareUrl` fell back to `http://localhost:8081` when `EXPO_PUBLIC_SHARE_BASE_URL` was unset. The app gave no indication the resulting link was device-local. Fix: added `isLocalShareUrl` helper; `handleShare` now shows an Alert ("Local-only link — Copy anyway / Cancel") before opening the share sheet when the URL is local.
+
+**OAuth dead code removed.**
+`oauthHelpers.ts` was unused since Task 4.5 removed the OAuth buttons. `expo-web-browser` and its `app.json` plugin entry were also removed. No OAuth-related code remains in the codebase. Login is email/password only.
+
+## Remaining limitations (accepted for MVP)
+
+- Share page has no SEO (`og:title`, `og:image`) — deferred to Task 6
+- No pagination on share page movie list — Post-MVP
+- No view analytics — Post-MVP
+- RLS migration (`playlist_movies_select` policy) must be applied manually in Supabase dashboard
+
+## Ready for Task 6?
+
+Yes, with one prerequisite: developer must have run the `playlist_movies_select` RLS migration in Supabase and set `EXPO_PUBLIC_SHARE_BASE_URL` to a real URL before giving share links to external testers.

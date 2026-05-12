@@ -14,7 +14,29 @@ export interface PublicPlaylistData {
   movies: PlaylistMovie[];
 }
 
+// Returns true when the share URL points to a local dev server.
+// Local URLs are valid for testing on the same device/network but cannot be
+// opened by anyone else — the user should set EXPO_PUBLIC_SHARE_BASE_URL to a
+// publicly reachable URL before sharing externally.
+export function isLocalShareUrl(url: string): boolean {
+  try {
+    const { hostname } = new URL(url);
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      // LAN addresses (192.168.x.x, 10.x.x.x, 172.16–31.x.x)
+      /^192\.168\./.test(hostname) ||
+      /^10\./.test(hostname) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function buildShareUrl(handle: string, slug: string): string {
+  // Falls back to localhost:8081 for local dev.
+  // For real external sharing, set EXPO_PUBLIC_SHARE_BASE_URL to a deployed URL.
   const base = (process.env.EXPO_PUBLIC_SHARE_BASE_URL ?? 'http://localhost:8081').replace(
     /\/$/,
     ''
