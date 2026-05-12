@@ -174,14 +174,25 @@ CREATE TABLE IF NOT EXISTS public.playlist_movies (
 
 ALTER TABLE public.playlist_movies ENABLE ROW LEVEL SECURITY;
 
--- Owner can select movies in their playlists
-CREATE POLICY "playlist_movies_owner_select"
+-- SELECT: owner can always read; anyone can read from public/unlisted playlists (Task 5 share pages)
+-- Task 4.5: replaced owner-only policy with one that also allows unauthenticated share-page access.
+-- Run: DROP POLICY IF EXISTS "playlist_movies_owner_select" ON public.playlist_movies; before re-applying.
+DROP POLICY IF EXISTS "playlist_movies_owner_select" ON public.playlist_movies;
+CREATE POLICY "playlist_movies_select"
   ON public.playlist_movies FOR SELECT
   USING (
+    -- Playlist owner can always read
     EXISTS (
       SELECT 1 FROM public.playlists
       WHERE playlists.id = playlist_movies.playlist_id
         AND playlists.user_id = auth.uid()
+    )
+    OR
+    -- Unauthenticated and other users can read movies from public/unlisted playlists
+    EXISTS (
+      SELECT 1 FROM public.playlists
+      WHERE playlists.id = playlist_movies.playlist_id
+        AND visibility IN ('public', 'unlisted')
     )
   );
 

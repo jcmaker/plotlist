@@ -75,6 +75,23 @@ Do not start a task before the previous one is working end-to-end.
 
 ---
 
+## Task 4.5 — Pre-Share Cleanup & Direction Correction (DONE)
+
+**Goal:** Correct audit findings before building the share page. No new features.
+
+- [x] Fix `playlist_movies` SELECT RLS — allow unauthenticated access for public/unlisted playlists
+- [x] Remove Home tab (was stale placeholder) — now redirects to Lists
+- [x] Remove Search tab from tab bar (movie search is contextual from Playlist Detail)
+- [x] Remove broken Google/Kakao OAuth buttons from login screen
+- [x] Remove hardcoded-zero stats block from Profile screen
+- [x] Remove unused `ScrollView` import from playlist detail screen
+- [x] Remove dead `expo-auth-session` dependency from `package.json`
+- [x] Update README to reflect Tasks 1–4 completion
+
+**Done when:** App navigation is clean, login is reliable, and share-page RLS is unblocked.
+
+---
+
 ## Task 5 — Share Link & Public Playlist Page
 
 **Goal:** Each playlist has a public URL that non-app users can view.

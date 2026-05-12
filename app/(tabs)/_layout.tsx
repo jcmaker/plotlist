@@ -11,15 +11,14 @@ interface TabConfig {
 }
 
 const TAB_CONFIG: TabConfig[] = [
-  { name: 'index', title: 'Home', icon: 'home-outline', iconFocused: 'home' },
   { name: 'playlists', title: 'Lists', icon: 'list-outline', iconFocused: 'list' },
-  { name: 'search', title: 'Search', icon: 'search-outline', iconFocused: 'search' },
   { name: 'profile', title: 'Profile', icon: 'person-outline', iconFocused: 'person' },
 ];
 
 export default function TabsLayout() {
   return (
     <Tabs
+      initialRouteName="playlists"
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
@@ -48,6 +47,9 @@ export default function TabsLayout() {
           }}
         />
       ))}
+      {/* Routes required by Expo Router but not shown in tab bar */}
+      <Tabs.Screen name="index" options={{ href: null }} />
+      <Tabs.Screen name="search" options={{ href: null }} />
     </Tabs>
   );
 }

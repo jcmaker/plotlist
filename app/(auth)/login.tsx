@@ -12,17 +12,14 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../src/lib/supabase';
-import { signInWithOAuth, OAuthProvider } from '../../src/lib/oauthHelpers';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [oauthProvider, setOauthProvider] = useState<OAuthProvider | null>(null);
   const router = useRouter();
 
-  const isBusy = isLoading || oauthProvider !== null;
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !isBusy;
+  const canSubmit = email.trim().length > 0 && password.length > 0 && !isLoading;
 
   async function handleSignIn() {
     if (!canSubmit) return;
@@ -33,15 +30,6 @@ export default function LoginScreen() {
     });
     setIsLoading(false);
     if (error) Alert.alert('Sign In Failed', error.message);
-    // On success: onAuthStateChange → AuthGuard redirects to /(tabs)
-  }
-
-  async function handleOAuth(provider: OAuthProvider) {
-    if (isBusy) return;
-    setOauthProvider(provider);
-    const { error } = await signInWithOAuth(provider);
-    setOauthProvider(null);
-    if (error) Alert.alert('Sign In Failed', error);
   }
 
   return (
@@ -57,7 +45,6 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         scrollEnabled={false}
       >
-        {/* ── Email / Password ── */}
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -68,7 +55,7 @@ export default function LoginScreen() {
           returnKeyType="next"
           value={email}
           onChangeText={setEmail}
-          editable={!isBusy}
+          editable={!isLoading}
         />
         <TextInput
           style={styles.input}
@@ -79,7 +66,7 @@ export default function LoginScreen() {
           onSubmitEditing={handleSignIn}
           value={password}
           onChangeText={setPassword}
-          editable={!isBusy}
+          editable={!isLoading}
         />
 
         <TouchableOpacity
@@ -97,50 +84,9 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => router.push('/(auth)/signup')}
-          disabled={isBusy}
+          disabled={isLoading}
         >
           <Text style={styles.secondaryButtonText}>Create Account</Text>
-        </TouchableOpacity>
-
-        {/* ── Divider ── */}
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        {/* ── Google ── */}
-        <TouchableOpacity
-          style={[styles.socialButton, styles.googleButton, isBusy && styles.socialButtonDisabled]}
-          onPress={() => handleOAuth('google')}
-          disabled={isBusy}
-          activeOpacity={0.8}
-        >
-          {oauthProvider === 'google' ? (
-            <ActivityIndicator color="#000000" />
-          ) : (
-            <>
-              <Text style={styles.googleIcon}>G</Text>
-              <Text style={styles.googleText}>Sign in with Google</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        {/* ── Kakao ── */}
-        <TouchableOpacity
-          style={[styles.socialButton, styles.kakaoButton, isBusy && styles.socialButtonDisabled]}
-          onPress={() => handleOAuth('kakao')}
-          disabled={isBusy}
-          activeOpacity={0.8}
-        >
-          {oauthProvider === 'kakao' ? (
-            <ActivityIndicator color="#3C1E1E" />
-          ) : (
-            <>
-              <Text style={styles.kakaoIcon}>💬</Text>
-              <Text style={styles.kakaoText}>카카오로 로그인</Text>
-            </>
-          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -209,57 +155,5 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#888',
     fontSize: 15,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginVertical: 4,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#2c2c2e',
-  },
-  dividerText: {
-    fontSize: 13,
-    color: '#555',
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    paddingVertical: 14,
-    gap: 10,
-  },
-  socialButtonDisabled: {
-    opacity: 0.5,
-  },
-  // Google
-  googleButton: {
-    backgroundColor: '#ffffff',
-  },
-  googleIcon: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#4285F4',
-  },
-  googleText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  // Kakao
-  kakaoButton: {
-    backgroundColor: '#FEE500',
-  },
-  kakaoIcon: {
-    fontSize: 16,
-  },
-  kakaoText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#3C1E1E',
   },
 });

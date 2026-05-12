@@ -87,24 +87,39 @@ Scan the QR code with Expo Go (iOS/Android) or press `i` for iOS Simulator / `a`
 
 ---
 
-## Current State (Task 1 — Foundation)
+## Current State (Tasks 1–4 complete)
 
-The app currently shows all screens as placeholders. Authentication, real data, and all features are implemented in subsequent tasks. See `docs/development-plan.md` for the full roadmap.
+Tasks 1–4 are fully implemented. See `docs/development-plan.md` for the full roadmap.
 
-- **Login screen** — placeholder form, no real auth
-- **Home screen** — placeholder
-- **My Lists screen** — placeholder empty state
-- **Movie Search screen** — placeholder search bar
-- **Profile screen** — placeholder profile card
-- **Playlist Detail screen** — accessible via `/playlist/:id`, shows the ID
+- **Login / Signup** — email/password auth via Supabase
+- **Lists tab** — create, view, edit, delete playlists with visibility (private/unlisted/public)
+- **Playlist Detail** — add movies from TMDB search, remove movies, rate (1–10), add personal notes
+- **Movie Search** — contextual from Playlist Detail → "+ Add Movie"; 300ms debounce, poster display
+- **Profile tab** — display name, handle, bio; sign out
+
+**Next task:** Task 5 — Public Share Pages
+
+---
+
+## Route Structure
+
+```
+app/
+├── (auth)/login.tsx           — email/password sign-in
+├── (auth)/signup.tsx          — new account creation
+├── (tabs)/playlists.tsx       — user's playlist list (main tab)
+├── (tabs)/profile.tsx         — profile + sign out
+├── playlist/new.tsx           — create playlist
+├── playlist/[id]/index.tsx    — playlist detail + movie list
+├── playlist/[id]/edit.tsx     — edit playlist metadata
+└── playlist/[id]/add-movie.tsx — TMDB search, add to playlist
+```
 
 ---
 
 ## Development Workflow
 
 Each task in `docs/development-plan.md` is designed to be completable end-to-end before the next one starts. Do not skip tasks or implement features out of order.
-
-**Next task:** Task 2 — Authentication & Profile (requires a real Supabase project)
 
 ---
 

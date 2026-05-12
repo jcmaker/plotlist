@@ -46,29 +46,16 @@ export default function ProfileScreen() {
       )}
 
       {!isLoading && !hasError && profile && (
-        <>
-          <View style={styles.profileSection}>
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarInitial}>{avatarInitial}</Text>
-            </View>
-            <Text style={styles.displayName}>{profile.displayName}</Text>
-            <Text style={styles.handle}>@{profile.handle}</Text>
-            {profile.bio ? (
-              <Text style={styles.bio}>{profile.bio}</Text>
-            ) : null}
+        <View style={styles.profileSection}>
+          <View style={styles.avatarPlaceholder}>
+            <Text style={styles.avatarInitial}>{avatarInitial}</Text>
           </View>
-
-          <View style={styles.statsRow}>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>0</Text>
-              <Text style={styles.statLabel}>Lists</Text>
-            </View>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>0</Text>
-              <Text style={styles.statLabel}>Movies</Text>
-            </View>
-          </View>
-        </>
+          <Text style={styles.displayName}>{profile.displayName}</Text>
+          <Text style={styles.handle}>@{profile.handle}</Text>
+          {profile.bio ? (
+            <Text style={styles.bio}>{profile.bio}</Text>
+          ) : null}
+        </View>
       )}
     </SafeAreaView>
   );
@@ -121,7 +108,7 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 40,
     gap: 6,
   },
   avatarPlaceholder: {
@@ -154,26 +141,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     lineHeight: 20,
     marginTop: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 48,
-    paddingVertical: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#1c1c1e',
-  },
-  stat: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  statLabel: {
-    fontSize: 13,
-    color: '#666',
   },
 });

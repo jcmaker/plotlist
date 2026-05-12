@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,

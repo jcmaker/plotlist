@@ -65,7 +65,12 @@ Extends Supabase's built-in `auth.users`. Created automatically via trigger on u
 
 **Unique constraint:** `(playlist_id, tmdb_movie_id)` — one movie per playlist
 
-**RLS:** All operations check `playlists.user_id = auth.uid()` via EXISTS subquery. Title, poster, and year are fetched via FK join with `movie_cache`, not stored redundantly.
+**RLS:**
+- SELECT: playlist owner OR any user when parent playlist `visibility IN ('public', 'unlisted')`. Private playlist movies are never exposed. This policy enables Task 5 unauthenticated share pages.
+- INSERT: `auth.uid() = user_id` AND owner of parent playlist.
+- UPDATE/DELETE: owner of parent playlist only.
+
+Title, poster, and year are fetched via FK join with `movie_cache`, not stored redundantly.
 
 ---
 
